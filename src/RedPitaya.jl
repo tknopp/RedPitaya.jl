@@ -170,6 +170,21 @@ function decimation(rp::RedPitaya, dec::Integer)
   send(rp,cmd)
 end
 
+export optimalDecimation
+function optimalDecimation(rp::RedPitaya, freq)
+  if freq > 2e6
+    return 1
+  elseif freq > 50e3
+    return 8
+  elseif freq > 8e3
+    return 64
+  elseif freq > 1e3
+    return 1024
+  else
+    return 8192
+  end
+end
+
 export average
 function average(rp::RedPitaya)
   cmd ="ACQ:AVG?"

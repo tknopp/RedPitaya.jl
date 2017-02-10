@@ -3,15 +3,13 @@ using PyPlot
 
 rp = RedPitaya("192.168.1.26")
 
-dec = 8 # this may have to be matched to the send frequency
-
 freqs  = linspace( 1000, 1e6, 50)
 tf = zeros(Complex128, length(freqs))
 
 USE_TRIGGER_VERSION = true
 
 for (i,freq) in enumerate(freqs)
-  dec = freq < 50e3 ? 64 : 8
+  dec = optimalDecimation(rp,freq)
 
   numPeriods = 4
   freqR = roundFreq(rp,dec,freq)

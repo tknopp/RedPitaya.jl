@@ -3,10 +3,9 @@ using PyPlot
 
 rp = RedPitaya("192.168.1.26")
 
-baseFreq = 125e6
-dec = 64 # this may have to be matched to the send frequency
-
 freq = 25000
+dec = optimalDecimation(dec,freq)
+
 numPeriods = 4
 freqR = roundFreq(rp,dec,freq)
 numSampPerPeriod = numSamplesPerPeriod(rp,dec,freqR)
