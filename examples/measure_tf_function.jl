@@ -5,10 +5,12 @@ rp = RedPitaya("192.168.1.26")
 
 dec = 8 # this may have to be matched to the send frequency
 
+freqs  = linspace( 10000, 1e6, 50)
+tf = zeros(Complex128, length(freqs))
+
 USE_TRIGGER_VERSION = true
 
-freqs  = linspace( 10000, 1e6, 200)
-for freq in freqs
+for (i,freq) in enumerate(freqs)
   dec = freq < 50e3 ? 64 : 8
 
   numPeriods = 4
@@ -22,25 +24,24 @@ for freq in freqs
   # start sending
   send(rp,"GEN:RST")
   if !USE_TRIGGER_VERSION
-    sendAnalogSignal(rp,1,"SINE",freqR,0.4)
+    sendAnalogSignal(rp,1,"SINE",freqR,0.4) # NO TRIGGER VERSION
   else
     sendAnalogSignal(rp,1,"SINE",freqR,0.4, numPeriods*2)
   end
 
   # receive data
   if !USE_TRIGGER_VERSION
-    u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.2)
+    u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.2) # NO TRIGGER VERSION
   else
     u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.0001, typ="CUS")
-    #u1 = receiveAnalogSignalWithTrigger(rp, 1, -1, -1, dec=dec, delay=0.0, typ="OLD")
   end
-
-
-  figure(1)
-  clf()
-  subplot(2,1,1)
-  plot(u1)
-  subplot(2,1,2)
-  semilogy(abs(rfft(u1))[1:numPeriods*2],"o-b",lw=2)
-  #sleep(1)
+  
+  tf[i] = rfft(u1)[numPeriods+1]
 end
+
+figure(1)
+clf()
+subplot(2,1,1)
+plot(angle(tf),"o-r",lw=2)
+subplot(2,1,2)
+semilogy(abs(tf),"o-b",lw=2)

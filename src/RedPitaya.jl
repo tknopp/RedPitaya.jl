@@ -57,29 +57,73 @@ function sendAnalogSignal(rp::RedPitaya, chan::Integer, func::String,
   source = "SOUR$(chan)"
   #send(rp,"GEN:RST")
   send(rp,"$(source):FUNC $(func)") # Set function of output signal
+  bufferSize(rp)
   send(rp,"$(source):FREQ:FIX $(freq)") # Set frequency of output signal
+  bufferSize(rp)
   send(rp,"$(source):VOLT $(amplitude)") # Set amplitude of output signal
+  bufferSize(rp)
 
   if ncycBurst > 0
-    send(rp,"SOUR1:BURS:STAT ON") #Set burst mode to ON
-    send(rp,"SOUR1:BURS:NCYC $ncycBurst") #Set 1 pulses of sine wave
+    #send(rp,"$(source):BURS:STAT ON") #Set burst mode to ON
+    #bufferSize(rp)
+    send(rp,"$(source):BURS:NCYC $ncycBurst") #Set 1 pulses of sine wave
+    bufferSize(rp)
   end
   send(rp,"OUTPUT$(chan):STATE ON") # Set output to ON
+  bufferSize(rp)
 end
 
 export receiveAnalogSignal
 function receiveAnalogSignal(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
-                             dec::Integer=1, delay=0.2)
+                             dec::Integer=1, delay=0.2, typ="STA")
 
   acqReset(rp)
   decimation(rp,dec)
   acqStart(rp)
   sleep(delay) # fill buffers
 
+  return receiveAnalogSignalLowLevel(rp,chan,from,to,typ)
+end
+
+export receiveAnalogSignalWithTrigger
+function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
+                             dec::Integer=1, delay=0.2, typ="STA")
+
+  acqReset(rp)
+  decimation(rp,dec)
+  send(rp,"ACQ:TRIG:LEV 0")
+  send(rp,"ACQ:TRIG:DLY 8192")
+  acqStart(rp)
+  sleep(delay) # fill buffers
+
+  send(rp,"ACQ:TRIG CH1_PE")
+  send(rp,"SOUR1:TRIG:IMM") # TODO
+
+  while true
+    trig_rsp = query(rp,"ACQ:TRIG:STAT?")
+    println(trig_rsp)
+    if trig_rsp[1:2] == "TD"
+       break
+     end
+  end
+
+  if typ=="CUS"
+    tpos = parse(Int64,query(rp,"ACQ:TPOS?"))
+    return receiveAnalogSignalLowLevel(rp,chan,tpos,to,"STA")
+  else
+    return receiveAnalogSignalLowLevel(rp,chan,from,to,typ)
+  end
+end
+
+export receiveAnalogSignalLowLevel
+function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1, typ="STA")
+
   if from == to == -1
     send(rp,"ACQ:SOUR$(chan):DATA?")
-  else
+  elseif typ == "STA"
     send(rp,"ACQ:SOUR$(chan):DATA:STA:N? $(from),$(to)")
+  else
+    send(rp,"ACQ:SOUR$(chan):DATA:$(typ):N? $(to)")
   end
 
   u = receive(rp)
