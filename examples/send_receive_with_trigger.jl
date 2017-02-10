@@ -19,8 +19,8 @@ send(rp,"GEN:RST")
 sendAnalogSignal(rp,1,"SINE",freqR,0.4,numPeriods*2)
 
 # receive data
-u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.2, typ="OLD")
-#u1 = receiveAnalogSignalWithTrigger(rp, 1, -1, -1, dec=dec, delay=0.0, typ="OLD")
+u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.2, typ="OLD",
+                      trigger="CH1_PE", triggerLevel=-0.1)
 
 figure(1)
 clf()

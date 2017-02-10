@@ -87,17 +87,18 @@ end
 
 export receiveAnalogSignalWithTrigger
 function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
-                             dec::Integer=1, delay=0.2, typ="STA")
+                             dec::Integer=1, delay=0.2, typ="OLD", trigger="AWG_NE",
+                             triggerLevel=0.2)
 
   acqReset(rp)
   decimation(rp,dec)
-  send(rp,"ACQ:TRIG:LEV 0")
+  send(rp,"ACQ:TRIG:LEV $triggerLevel")
   send(rp,"ACQ:TRIG:DLY 8192")
   acqStart(rp)
   sleep(delay) # fill buffers
 
-  send(rp,"ACQ:TRIG CH1_PE")
-  send(rp,"SOUR1:TRIG:IMM") # TODO
+  send(rp,"ACQ:TRIG $trigger")
+  send(rp,"SOUR1:TRIG:IMM")
 
   while true
     trig_rsp = query(rp,"ACQ:TRIG:STAT?")
@@ -116,7 +117,8 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=
 end
 
 export receiveAnalogSignalLowLevel
-function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1, typ="STA")
+function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1,
+                                     to::Int=-1, typ="OLD")
 
   if from == to == -1
     send(rp,"ACQ:SOUR$(chan):DATA?")

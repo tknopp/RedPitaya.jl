@@ -5,7 +5,7 @@ rp = RedPitaya("192.168.1.26")
 
 dec = 8 # this may have to be matched to the send frequency
 
-freqs  = linspace( 10000, 1e6, 50)
+freqs  = linspace( 1000, 1e6, 50)
 tf = zeros(Complex128, length(freqs))
 
 USE_TRIGGER_VERSION = true
@@ -33,15 +33,17 @@ for (i,freq) in enumerate(freqs)
   if !USE_TRIGGER_VERSION
     u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.2) # NO TRIGGER VERSION
   else
-    u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.0001, typ="CUS")
+    u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.1, typ="OLD",
+                              trigger="CH1_PE", triggerLevel=-0.1)
+    #u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.1, typ="CUS")
   end
-  
-  tf[i] = rfft(u1)[numPeriods+1]
+
+  tf[i] = rfft(u1)[numPeriods+1] / length(u1)
 end
 
 figure(1)
 clf()
 subplot(2,1,1)
-plot(angle(tf),"o-r",lw=2)
+plot(freqs,angle(tf),"o-r",lw=2)
 subplot(2,1,2)
-semilogy(abs(tf),"o-b",lw=2)
+semilogy(freqs,abs(tf),"o-b",lw=2)
