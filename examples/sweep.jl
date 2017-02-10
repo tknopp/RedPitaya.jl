@@ -21,7 +21,7 @@ for freq in freqs
   sendAnalogSignal(rp,1,"SINE",freqR,0.4)
 
   # receive data
-  u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.8)
+  u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.2)
 
   figure(1)
   clf()

@@ -7,7 +7,7 @@ baseFreq = 125e6
 dec = 64 # this may have to be matched to the send frequency
 
 freq = 25000
-numPeriods = 10
+numPeriods = 4
 freqR = roundFreq(rp,dec,freq)
 numSampPerPeriod = numSamplesPerPeriod(rp,dec,freqR)
 numSamp = numSampPerPeriod*numPeriods
@@ -28,3 +28,10 @@ subplot(2,1,1)
 plot(u1)
 subplot(2,1,2)
 semilogy(abs(rfft(u1))[1:numPeriods*4],"o-b",lw=2)
+
+
+#Lets check if the data is periodic
+figure(2)
+clf()
+plot(1:length(u1),u1,"x-r",lw=2)
+plot(length(u1)+1:2*length(u1),u1,"x-b",lw=2)
