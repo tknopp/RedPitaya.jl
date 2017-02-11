@@ -75,20 +75,20 @@ end
 
 export receiveAnalogSignal
 function receiveAnalogSignal(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
-                             dec::Integer=1, delay=0.2, typ="STA")
+                             dec::Integer=1, delay=0.2, typ="STA", binary=false)
 
   acqReset(rp)
   decimation(rp,dec)
   acqStart(rp)
   sleep(delay) # fill buffers
 
-  return receiveAnalogSignalLowLevel(rp,chan,from,to,typ)
+  return receiveAnalogSignalLowLevel(rp,chan,from,to,typ, binary)
 end
 
 export receiveAnalogSignalWithTrigger
 function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
                              dec::Integer=1, delay=0.2, typ="OLD", trigger="AWG_NE",
-                             triggerLevel=0.2)
+                             triggerLevel=0.2, binary=false)
 
   acqReset(rp)
   decimation(rp,dec)
@@ -110,15 +110,22 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=
 
   if typ=="CUS"
     tpos = parse(Int64,query(rp,"ACQ:TPOS?"))
-    return receiveAnalogSignalLowLevel(rp,chan,tpos,to,"STA")
+    return receiveAnalogSignalLowLevel(rp,chan,tpos,to,"STA",binary)
   else
-    return receiveAnalogSignalLowLevel(rp,chan,from,to,typ)
+    return receiveAnalogSignalLowLevel(rp,chan,from,to,typ,binary)
   end
 end
 
 export receiveAnalogSignalLowLevel
 function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1,
-                                     to::Int=-1, typ="OLD")
+                                     to::Int=-1, typ="OLD", binary::Bool=false)
+
+  if binary
+    send(rp,"ACQ:DATA:FORMAT BIN")
+    send(rp,"ACQ:DATA:UNITS RAW")
+  else
+    send(rp,"ACQ:DATA:FORMAT ASCII")
+  end
 
   if from == to == -1
     send(rp,"ACQ:SOUR$(chan):DATA?")
@@ -129,7 +136,15 @@ function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1,
   end
 
   u = receive(rp)
-  uFl = [parse(Float64,o) for o in split(u[2:end-1],",")]
+  if binary
+    lenData = (from == to == -1) ? 16384 : to
+    u = read(rp.socket,Int16, lenData) # this still does not work
+    #u = [bswap(a) for a in u]
+    uFl = map(Float32,u)
+  else
+    uFl = [parse(Float64,o) for o in split(u[2:end-1],",")]
+  end
+
   return uFl
 end
 

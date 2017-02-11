@@ -19,7 +19,7 @@ sendAnalogSignal(rp,1,"SINE",freqR,0.4,numPeriods*2)
 
 # receive data
 u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.2, typ="OLD",
-                      trigger="CH1_PE", triggerLevel=-0.1)
+                      trigger="CH1_PE", triggerLevel=-0.1, binary=false)
 
 figure(1)
 clf()
