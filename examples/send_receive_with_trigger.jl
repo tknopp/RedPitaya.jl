@@ -3,7 +3,7 @@ using PyPlot
 
 rp = RedPitaya("192.168.1.26")
 
-freq = 25000
+freq = 80374.0
 dec = optimalDecimation(rp,freq)
 numPeriods = 4
 freqR = roundFreq(rp,dec,freq)
@@ -18,8 +18,10 @@ send(rp,"GEN:RST")
 sendAnalogSignal(rp,1,"SINE",freqR,0.4,numPeriods*2)
 
 # receive data
+trigger = "AWG_NE" # "CH1_PE"
 u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.2, typ="OLD",
-                      trigger="CH1_PE", triggerLevel=-0.1, binary=false)
+                      trigger=trigger, triggerLevel=-0.0, binary=true, raw=false,
+                      triggerDelay=numSampPerPeriod)
 
 figure(1)
 clf()

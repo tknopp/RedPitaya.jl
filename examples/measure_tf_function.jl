@@ -31,8 +31,10 @@ for (i,freq) in enumerate(freqs)
   if !USE_TRIGGER_VERSION
     u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.2) # NO TRIGGER VERSION
   else
-    u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.1, typ="OLD",
-                              trigger="CH1_PE", triggerLevel=-0.1)
+    trigger = "AWG_PE" #"CH1_PE"
+    u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.01, typ="OLD",
+                              trigger=trigger, triggerLevel=-0.1,
+                              triggerDelay=numSampPerPeriod)
     #u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.1, typ="CUS")
   end
 

@@ -75,25 +75,36 @@ end
 
 export receiveAnalogSignal
 function receiveAnalogSignal(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
-                             dec::Integer=1, delay=0.2, typ="STA", binary=false)
+                             dec::Integer=1, delay=0.2, typ="STA", binary=false, raw=false)
 
   acqReset(rp)
   decimation(rp,dec)
   acqStart(rp)
   sleep(delay) # fill buffers
 
-  return receiveAnalogSignalLowLevel(rp,chan,from,to,typ, binary)
+  return receiveAnalogSignalLowLevel(rp,chan,from,to,typ,binary,raw)
+end
+
+function _awg_trigger_delay(rp::RedPitaya, dec::Integer)
+  if dec == 1
+    return 25
+  elseif dec == 8
+    return 3
+  else
+    return 0
+  end
 end
 
 export receiveAnalogSignalWithTrigger
 function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
                              dec::Integer=1, delay=0.2, typ="OLD", trigger="AWG_NE",
-                             triggerLevel=0.2, binary=false)
+                             triggerLevel=0.2, binary=false, raw=false, triggerDelay=0)
 
   acqReset(rp)
   decimation(rp,dec)
   send(rp,"ACQ:TRIG:LEV $triggerLevel")
-  send(rp,"ACQ:TRIG:DLY 8192")
+  additionalDelay = contains(trigger,"AWG") ? _awg_trigger_delay(rp, dec) : 0
+  send(rp,"ACQ:TRIG:DLY $(8192+additionalDelay+triggerDelay)")
   acqStart(rp)
   sleep(delay) # fill buffers
 
@@ -110,21 +121,25 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=
 
   if typ=="CUS"
     tpos = parse(Int64,query(rp,"ACQ:TPOS?"))
-    return receiveAnalogSignalLowLevel(rp,chan,tpos,to,"STA",binary)
+    return receiveAnalogSignalLowLevel(rp,chan,tpos,to,"STA",binary,raw)
   else
-    return receiveAnalogSignalLowLevel(rp,chan,from,to,typ,binary)
+    return receiveAnalogSignalLowLevel(rp,chan,from,to,typ,binary,raw)
   end
 end
 
 export receiveAnalogSignalLowLevel
 function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1,
-                                     to::Int=-1, typ="OLD", binary::Bool=false)
+                                     to::Int=-1, typ="OLD", binary::Bool=false,
+                                     raw::Bool=false)
 
   if binary
     send(rp,"ACQ:DATA:FORMAT BIN")
-    send(rp,"ACQ:DATA:UNITS RAW")
   else
     send(rp,"ACQ:DATA:FORMAT ASCII")
+  end
+
+  if raw
+    send(rp,"ACQ:DATA:UNITS RAW")
   end
 
   if from == to == -1
@@ -135,13 +150,22 @@ function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1,
     send(rp,"ACQ:SOUR$(chan):DATA:$(typ):N? $(to)")
   end
 
-  u = receive(rp)
   if binary
-    lenData = (from == to == -1) ? 16384 : to
-    u = read(rp.socket,Int16, lenData) # this still does not work
-    #u = [bswap(a) for a in u]
-    uFl = map(Float32,u)
+    n = read(rp.socket,UInt8,1)
+    n = read(rp.socket,UInt8,1)
+    m = parse(Int64,String(copy(n)))
+    numBytesStr = read(rp.socket,UInt8,m)
+    numBytes = parse(Int64,String(copy(numBytesStr)))
+
+    if raw
+      u = read(rp.socket,Int16, div(numBytes,2))
+      uFl = [Float32(bswap(a)) for a in u]
+    else
+      u = read(rp.socket,Float32, div(numBytes,4))
+      uFl = [bswap(a) for a in u]
+    end
   else
+    u = receive(rp)
     uFl = [parse(Float64,o) for o in split(u[2:end-1],",")]
   end
 
@@ -187,13 +211,13 @@ end
 
 export optimalDecimation
 function optimalDecimation(rp::RedPitaya, freq)
-  if freq > 2e6
+  if freq > 100e3#2e6
     return 1
-  elseif freq > 50e3
+  elseif freq > 2e3#50e3
     return 8
-  elseif freq > 8e3
-    return 64
   elseif freq > 1e3
+    return 64
+  elseif freq > 0.5e3
     return 1024
   else
     return 8192

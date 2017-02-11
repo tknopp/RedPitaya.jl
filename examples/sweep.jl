@@ -29,10 +29,11 @@ for freq in freqs
   if !USE_TRIGGER_VERSION
     u1 = receiveAnalogSignal(rp, 1, 0, numSamp, dec=dec, delay=0.2)
   else
+    trigger = "AWG_PE" #"CH1_PE"
     u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec,
-                delay=0.1, typ="OLD", trigger="CH1_PE", triggerLevel=-0.1)
-    #u1 = receiveAnalogSignalWithTrigger(rp, 1, 0, numSamp, dec=dec, delay=0.0001, typ="CUS")
-    #u1 = receiveAnalogSignalWithTrigger(rp, 1, -1, -1, dec=dec, delay=0.0, typ="OLD")
+                delay=0.01, typ="OLD", trigger=trigger, triggerLevel=-0.1,
+                triggerDelay=numSampPerPeriod)
+
   end
 
 
