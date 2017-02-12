@@ -1,4 +1,4 @@
-export samplingFreq, roundFreq, numSamplesPerPeriod
+export samplingFreq, roundFreq, numSamplesPerPeriod, phaseShift
 
 function samplingFreq(rp::RedPitaya,dec::Integer)
   baseFreq = 125e6
@@ -16,6 +16,16 @@ function numSamplesPerPeriod(rp::RedPitaya,dec::Integer,freqR)
   return Int64(div(samplingFreq(rp,dec),freqR))
 end
 
+"""
+Return the number of time points the signal u has the be shifted
+in order to have phase pi/2 (i.e. be a sine wave)
+"""
+function phaseShift(u, numPeriods)
+  numSampPerPeriod = div(length(u),numPeriods)
+  complexSine = exp(-2*pi*im*numPeriods*(0:length(u)-1)/length(u))
+  fourierCoeff = dot(complexSine,u)
+  return round(Int,numSampPerPeriod*(angle(fourierCoeff) -pi/2) / (2pi))
+end
 
 function test2(rp)
   a=zeros(30)
