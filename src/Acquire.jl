@@ -91,7 +91,9 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=
   sleep(delay) # fill buffers
 
   send(rp,"ACQ:TRIG $trigger")
-  send(rp,"SOUR1:TRIG:IMM")
+  if trigger != "NOW" # Ugly
+    send(rp,"SOUR1:TRIG:IMM")
+  end
 
   while true
     trig_rsp = query(rp,"ACQ:TRIG:STAT?")
@@ -101,12 +103,15 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=
      end
   end
 
-  if typ=="CUS"
-    tpos = parse(Int64,query(rp,"ACQ:TPOS?"))
-    return receiveAnalogSignalLowLevel(rp,chan,tpos,to,"STA",binary,raw)
-  else
+
+  if chan > 0
     return receiveAnalogSignalLowLevel(rp,chan,from,to,typ,binary,raw)
+  else
+    u1 = receiveAnalogSignalLowLevel(rp,1,from,to,typ,binary,raw)
+    u2 = receiveAnalogSignalLowLevel(rp,2,from,to,typ,binary,raw)
+    return u1, u2
   end
+
 end
 
 export receiveAnalogSignalLowLevel
