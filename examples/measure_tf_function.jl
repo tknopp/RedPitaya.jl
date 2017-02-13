@@ -1,9 +1,10 @@
 using Redpitaya
 using PyPlot
 
-rp = RedPitaya("192.168.1.26")
+#rp = RedPitaya("192.168.1.26")
+rp = RedPitaya("10.167.6.99")
 
-freqs  = linspace( 1000, 1e6, 50)
+freqs  = linspace( 10e3, 40e3, 50)
 tf = measureTransferFunction(rp, freqs)
 
 figure(1)
