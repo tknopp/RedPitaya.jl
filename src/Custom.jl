@@ -1,6 +1,6 @@
-export apply1DAcquistion
+export apply1DAcquisition
 
-function apply1DAcquistion(ip)
+function apply1DAcquisition(ip)
   socket = connect(ip,7777)
   write(socket,UInt32(100))
   write(socket,UInt32(100))
