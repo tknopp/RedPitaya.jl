@@ -77,7 +77,7 @@ include("Generator.jl")
 include("Acquire.jl")
 include("Utils.jl")
 include("Measurements.jl")
-
+include("Custom.jl")
 
 
 end #module
