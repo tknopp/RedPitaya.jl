@@ -37,9 +37,13 @@ amplitude = 0.39
                 binary=true, triggerDelay=numSampPerPeriod)
     uMeas[:] = circshift(uMeas,-phaseShift(uRef, numPeriods))
 
+  disableAnalogOutput(rp,1)
+
 lenFFT = length(rfft(uMeas))
 fr = linspace(0,125e6/2/dec,lenFFT)
 println(length(fr))
 
 showMPSData(vec(uMeas),fr)
+
+
 writecsv("MPS.csv",hcat(uMeas,uRef))

@@ -1,4 +1,4 @@
-export sendAnalogSignal
+export sendAnalogSignal, disableAnalogOutput
 
 ### Analog Output Interface ###
 
@@ -19,4 +19,8 @@ function sendAnalogSignal(rp::RedPitaya, chan::Integer, func::String,
     send(rp,"$(source):BURS:NCYC $ncycBurst") #Set 1 pulses of sine wave
   end
   send(rp,"OUTPUT$(chan):STATE ON") # Set output to ON
+end
+
+function disableAnalogOutput(rp::RedPitaya, chan::Integer)
+  send(rp,"OUTPUT$(chan):STATE OFF") # Set output to ON
 end
