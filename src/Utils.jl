@@ -13,7 +13,7 @@ end
 
 
 function numSamplesPerPeriod(rp::RedPitaya,dec::Integer,freqR)
-  return Int64(div(samplingFreq(rp,dec),freqR))
+  return Int(div(samplingFreq(rp,dec),freqR))
 end
 
 """

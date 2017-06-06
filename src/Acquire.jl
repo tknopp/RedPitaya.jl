@@ -56,7 +56,7 @@ bufferSize(rp::RedPitaya) = query(rp, "ACQ:BUF:SIZE?", Int)
 
 
 export receiveAnalogSignal
-function receiveAnalogSignal(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
+function receiveAnalogSignal(rp::RedPitaya, chan::Integer, from::Integer=-1, to::Integer=-1;
                              dec::Integer=1, delay=0.2, typ="STA", binary=false, raw=false)
 
   acqReset(rp)
@@ -78,7 +78,7 @@ function _awg_trigger_delay(rp::RedPitaya, dec::Integer)
 end
 
 export receiveAnalogSignalWithTrigger
-function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=-1, to::Int=-1;
+function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Integer=-1, to::Integer=-1;
                              dec::Integer=1, delay=0.2, typ="OLD", trigger="AWG_NE",
                              triggerLevel=0.2, binary=false, raw=false, triggerDelay=0)
 
@@ -115,8 +115,8 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Int=
 end
 
 export receiveAnalogSignalLowLevel
-function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Int=-1,
-                                     to::Int=-1, typ="OLD", binary::Bool=false,
+function receiveAnalogSignalLowLevel(rp::RedPitaya, chan::Integer, from::Integer=-1,
+                                     to::Integer=-1, typ="OLD", binary::Bool=false,
                                      raw::Bool=false)
 
   if binary
