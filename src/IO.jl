@@ -25,10 +25,10 @@ end
 
 function value(rp::RedPitaya, pin::String)
   send(rp,"ANALOG:PIN? $(pin)")
-  return parse(Int, receive(rp)) == 1
+  return parse(Float64, receive(rp))
 end
 
-function value(rp::RedPitaya, pin::String, value::Bool)
-  cmd ="ANALOG:PIN $(pin),$(Int(value))"
+function value(rp::RedPitaya, pin::String, value::Float64)
+  cmd ="ANALOG:PIN $(pin),$(value)"
   send(rp,cmd)
 end
