@@ -1,0 +1,7 @@
+name = "Redpitaya"
+uuid = "5fd2fa83-560a-547b-beee-735fb73909c5"
+authors = ["Tobias Knopp <tobias@knoppweb.de>"]
+version = "0.0.0"
+
+[deps]
+Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"

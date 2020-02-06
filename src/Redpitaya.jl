@@ -1,11 +1,13 @@
 module Redpitaya
 
+using Sockets
+
 import Base: send, start, reset
 
 export RedPitaya, receive, query, stop,
        receiveBinaryFloat,receiveBinaryInt16,receiveASCIIArray
 
-type RedPitaya
+mutable struct RedPitaya
   delim::String
   socket::TCPSocket
 
