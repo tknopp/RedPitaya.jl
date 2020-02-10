@@ -85,7 +85,7 @@ function receiveAnalogSignalWithTrigger(rp::RedPitaya, chan::Integer, from::Inte
   acqReset(rp)
   decimation(rp,dec)
   send(rp,"ACQ:TRIG:LEV $triggerLevel")
-  additionalDelay = contains(trigger,"AWG") ? _awg_trigger_delay(rp, dec) : 0
+  additionalDelay = occursin("AWG", trigger) ? _awg_trigger_delay(rp, dec) : 0
   send(rp,"ACQ:TRIG:DLY $(8192+additionalDelay+triggerDelay)")
   acqStart(rp)
   sleep(delay) # fill buffers

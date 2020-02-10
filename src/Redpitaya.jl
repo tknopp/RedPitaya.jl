@@ -2,9 +2,9 @@ module Redpitaya
 
 using Sockets
 
-import Base: send, start, reset
+import Base: reset
 
-export RedPitaya, receive, query, stop,
+export RedPitaya, receive, query, start, stop, send,
        receiveBinaryFloat,receiveBinaryInt16,receiveASCIIArray
 
 mutable struct RedPitaya
@@ -32,23 +32,23 @@ function receive(rp::RedPitaya)
 end
 
 function readBinaryHeader(rp::RedPitaya)
-  n = read(rp.socket,UInt8,1)
-  n = read(rp.socket,UInt8,1)
+  n = read!(rp.socket,Array{UInt8}(undef,1))
+  n = read!(rp.socket,Array{UInt8}(undef,1))
   m = parse(Int64,String(copy(n)))
-  numBytesStr = read(rp.socket,UInt8,m)
+  numBytesStr = read!(rp.socket,Array{UInt8}(undef,m))
   numBytes = parse(Int64,String(copy(numBytesStr)))
   return numBytes
 end
 
 function receiveBinaryFloat(rp::RedPitaya)
   numBytes = readBinaryHeader(rp)
-  u = read(rp.socket,Float32, div(numBytes,4))
+  u = read!(rp.socket, Array{Float32}(undef, div(numBytes,4)))
   uFl = [bswap(a) for a in u]
 end
 
 function receiveBinaryInt16(rp::RedPitaya)
   numBytes = readBinaryHeader(rp)
-  u = read(rp.socket,Int16, div(numBytes,2))
+  u = read!(rp.socket, Array{Int16}(undef, div(numBytes,2)))
   uFl = [Float32(bswap(a)) for a in u]
 end
 
