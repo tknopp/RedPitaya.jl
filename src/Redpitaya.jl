@@ -28,7 +28,7 @@ end
 Receive a String from the RedPitaya
 """
 function receive(rp::RedPitaya)
-  readline(rp.socket)[1:end-2]
+  readline(rp.socket)#[1:end-2]
 end
 
 function readBinaryHeader(rp::RedPitaya)

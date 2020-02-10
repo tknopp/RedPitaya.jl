@@ -1,13 +1,12 @@
 using Redpitaya
 
-ip = "10.167.6.97"
+ip = "rp-f07083.local"
 rp = RedPitaya(ip)
 
 # enable LED2
-digital_LED(rp,2,true)
+state(rp, "LED2", true)
 
 # ask if LED2 is on
-b = digital_LED(rp,2)
+b = state(rp, "LED2")
 
 println("LED2 is $b")
-
